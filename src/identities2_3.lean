@@ -5,12 +5,12 @@ open finset
 open_locale big_operators
 
 
-def Sum (f : ℕ -> ℝ) (s : finset ℕ) :=
+def Sum (f : ℕ → ℝ) (s : finset ℕ) :=
 ∑ k in s, f k
 
 
 
-lemma SumDistr (f : ℕ -> ℝ) (s : finset ℕ) (c : ℝ) : Sum (λ k, c * (f k)) s  = c * Sum f s :=
+lemma SumDistr (f : ℕ → ℝ) (s : finset ℕ) (c : ℝ) : Sum (λ k, c * (f k)) s  = c * Sum f s :=
 begin
   unfold Sum,
   rw mul_sum,
@@ -18,7 +18,7 @@ end
 
 
 
-lemma SumAssoc (a : ℕ -> ℝ) (b : ℕ -> ℝ) (s : finset ℕ) : Sum (λ k, a k + b k) s = Sum a s + Sum b s :=
+lemma SumAssoc (a : ℕ → ℝ) (b : ℕ → ℝ) (s : finset ℕ) : Sum (λ k, a k + b k) s = Sum a s + Sum b s :=
 begin
   exact sum_add_distrib,
 end
@@ -26,7 +26,7 @@ end
 
 
 
-lemma SumComm (f : ℕ -> ℝ) (l1 : list ℕ) (p : ℕ → ℕ) (h : l1 ~ (l1.map p) ) :
+lemma SumComm (f : ℕ → ℝ) (l1 : list ℕ) (p : ℕ → ℕ) (h : l1 ~ (l1.map p) ) :
 Sum f l1.to_finset = Sum f (l1.map p).to_finset := 
 begin
   have h1 : l1.to_finset = (l1.map p).to_finset,
@@ -38,7 +38,7 @@ end
 
 
 
-lemma GaussSum (n : ℕ) : 2 * Sum (λ k, k) (finset.range (n+1)) = n * (n + 1) :=
+lemma GaussSum (n : ℕ) : 2 * Sum (λ k, k) (range (n+1)) = n * (n + 1) :=
 begin 
 unfold Sum,
 induction n with n IH,
@@ -52,7 +52,7 @@ end
 
 
 
-lemma AuxRev (a : ℝ) (b : ℝ) (n : ℕ) (s = finset.range (n+1)) : 
+lemma AuxRev (a : ℝ) (b : ℝ) (n : ℕ) (s = range (n+1)) : 
 Sum (λ k, a + b*(n-k)) s = Sum (λ k, a + b*k) s :=
 begin
   unfold Sum,
@@ -118,7 +118,7 @@ end
 
 
 
-lemma id220 (f : ℕ -> ℝ) (s1 : finset ℕ ) (s2 : finset ℕ ) :
+lemma id220 (f : ℕ → ℝ) (s1 : finset ℕ ) (s2 : finset ℕ ) :
 Sum f s1 + Sum f s2 = Sum f (s1 ∩ s2) + Sum f (s1 ∪ s2) :=
 begin
   rw add_comm (Sum f (s1 ∩ s2)),
@@ -127,7 +127,51 @@ begin
 end
 
 
-lemma id223 (f : ℕ -> ℝ) (n : ℕ) : Sum f (range (n+1)) = f 0 + Sum f ( (range (n+1)) \ (range 1)) :=
+
+lemma id221 (f : ℕ → ℝ) (s : finset ℕ) (snat : finset ℕ) (s ⊆ snat) :
+ Sum f s = Sum (λ k, f k * (ite (k ∈ s) 1 0)) snat :=
+begin
+  have h : Sum (λ k, ((ite (k ∈ s) (f k) 0))) snat = Sum (λ k, (f k * (ite (k ∈ s) 1 0))) snat,
+  { apply congr, apply congr, refl, apply funext, intro x, exact (mul_boole (x ∈ s) (f x)).symm, refl, },
+  rw ← h,
+  unfold Sum,
+  rw sum_ite,
+  rw sum_const_zero,
+  rw add_zero,
+  have h1 : filter (λ (x : ℕ), x ∈ s) snat = s,
+  { exact inf_eq_right.mpr H, },
+  rw h1,
+end
+
+
+
+
+lemma id222 (s1 : finset ℕ) (s2 : finset ℕ) (k : ℕ) :
+ (ite (k ∈ s1) 1 0) + (ite (k ∈ s2) 1 0) = (ite (k ∈ s1 ∩ s2) 1 0) + (ite (k ∈ s1 ∪ s2) 1 0) :=
+begin
+  simp,
+  by_cases h1 : (k ∈ s1),
+  { by_cases h2 : (k ∈ s2),
+    { rw (if_pos h1), rw (if_pos h2), rw (if_pos (and.intro h1 h2)), rw (if_pos (or.inl h1)), },
+    rw (if_pos h1), rw (if_neg h2), have hb : (k ∈ s1 ∧ k ∈ s2) = false,
+   { apply and_eq_of_eq_false_right, simp, exact h2, },
+    rw (if_neg (not_of_eq_false hb)), rw (if_pos (or.inl h1)), },
+  by_cases h2 : (k ∈ s2),
+    { rw (if_neg h1), rw (if_pos h2), have hb : (k ∈ s1 ∧ k ∈ s2) = false,
+   { apply and_eq_of_eq_false_left, simp, exact h1, },
+    rw (if_neg (not_of_eq_false hb)), rw (if_pos (or.inr h2)), },
+  rw (if_neg h1), rw (if_neg h2),  have hb : (k ∈ s1 ∧ k ∈ s2) = false,
+   { apply and_eq_of_eq_false_right, simp, exact h2, },
+    rw (if_neg (not_of_eq_false hb)), have ho : (k ∈ s1 ∨ k ∈ s2) = false,
+  { simp, intro notor, apply or.elim notor h1 h2, }, rw (if_neg (not_of_eq_false ho)),
+end
+
+
+
+
+
+
+lemma id223 (f : ℕ → ℝ) (n : ℕ) : Sum f (range (n+1)) = f 0 + Sum f ( (range (n+1)) \ (range 1)) :=
 begin
   unfold Sum,
   rw add_comm (f 0),
@@ -139,7 +183,7 @@ end
 
 
 
-lemma id224 (f : ℕ -> ℝ) (n : ℕ) : 
+lemma id224 (f : ℕ → ℝ) (n : ℕ) : 
 Sum f (range (n+1)) + f (n+1) = f 0 + Sum (λ k, f (k+1)) (range (n+1)) :=
 begin
   unfold Sum,
@@ -232,44 +276,6 @@ begin
 end
 
 
-
-lemma id221 (f : ℕ → ℝ) (s : finset ℕ) (snat : finset ℕ) (s ⊆ snat) :
- Sum f s = Sum (λ k, f k * (ite (k ∈ s) 1 0)) snat :=
-begin
-  have h : Sum (λ k, ((ite (k ∈ s) (f k) 0))) snat = Sum (λ k, (f k * (ite (k ∈ s) 1 0))) snat,
-  { apply congr, apply congr, refl, apply funext, intro x, exact (mul_boole (x ∈ s) (f x)).symm, refl, },
-  rw ← h,
-  unfold Sum,
-  rw sum_ite,
-  rw sum_const_zero,
-  rw add_zero,
-  have h : filter (λ (x : ℕ), x ∈ s) snat = s,
-  { exact inf_eq_right.mpr H, },
-  rw h,
-end
-
-
-
-
-lemma id222 (s1 : finset ℕ) (s2 : finset ℕ) (k : ℕ) :
- (ite (k ∈ s1) 1 0) + (ite (k ∈ s2) 1 0) = (ite (k ∈ s1 ∩ s2) 1 0) + (ite (k ∈ s1 ∪ s2) 1 0) :=
-begin
-  simp,
-  by_cases h1 : (k ∈ s1),
-  { by_cases h2 : (k ∈ s2),
-    { rw (if_pos h1), rw (if_pos h2), rw (if_pos (and.intro h1 h2)), rw (if_pos (or.inl h1)), },
-    rw (if_pos h1), rw (if_neg h2), have hb : (k ∈ s1 ∧ k ∈ s2) = false,
-   { apply and_eq_of_eq_false_right, simp, exact h2, },
-    rw (if_neg (not_of_eq_false hb)), rw (if_pos (or.inl h1)), },
-  by_cases h2 : (k ∈ s2),
-    { rw (if_neg h1), rw (if_pos h2), have hb : (k ∈ s1 ∧ k ∈ s2) = false,
-   { apply and_eq_of_eq_false_left, simp, exact h1, },
-    rw (if_neg (not_of_eq_false hb)), rw (if_pos (or.inr h2)), },
-  rw (if_neg h1), rw (if_neg h2),  have hb : (k ∈ s1 ∧ k ∈ s2) = false,
-   { apply and_eq_of_eq_false_right, simp, exact h2, },
-    rw (if_neg (not_of_eq_false hb)), have ho : (k ∈ s1 ∨ k ∈ s2) = false,
-  { simp, intro notor, apply or.elim notor h1 h2, }, rw (if_neg (not_of_eq_false ho)),
-end
 
 
 

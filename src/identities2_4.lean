@@ -11,26 +11,24 @@ lemma aux1 (f : ℕ → ℕ → ℝ) (s : finset ℕ) (sj : finset ℕ) (snat : 
  ite (j ∈ sj) (Sum (f j) s) 0 = Sum (λ k, f j k * (ite (j ∈ sj ∧ k ∈ s) 1 0)) snat :=
 begin
 
-  have h : Sum (λ k, ((ite (j ∈ sj ∧ k ∈ s) (f j k) 0))) snat = Sum (λ k, (f j k * (ite (j ∈ sj ∧ k ∈ s) 1 0))) snat,
+  have h1 : Sum (λ k, ((ite (j ∈ sj ∧ k ∈ s) (f j k) 0))) snat = Sum (λ k, f j k * (ite (j ∈ sj ∧ k ∈ s) 1 0)) snat,
   { apply congr, apply congr, refl, apply funext, intro x, exact (mul_boole (j ∈ sj ∧ x ∈ s) (f j x)).symm, refl, },
-  rw ← h,
+  rw ← h1,
   unfold Sum,
   
-  have h3 : ∑ (k : ℕ) in snat, ite (j ∈ sj ∧ k ∈ s) (f j k) 0 = 
+  have h2 : ∑ (k : ℕ) in snat, ite (j ∈ sj ∧ k ∈ s) (f j k) 0 = 
   ite (j ∈ sj) (∑ (k : ℕ) in snat, ite (k ∈ s) (f j k) 0) 0, 
   { rw ← boole_mul, rw mul_sum, apply congr, refl, apply funext, intro k, rw mul_comm, rw mul_boole,
   rw ite_and, },
-  rw h3,
+  rw h2,
 
   rw sum_ite,
   rw sum_const_zero,
   rw add_zero,
-  have h1 : filter (λ (x : ℕ), x ∈ s) snat = s,
+  have h3 : filter (λ (x : ℕ), x ∈ s) snat = s,
   { exact inf_eq_right.mpr H, },
-  have h2 : ∑ (k : ℕ) in s, f j k = ∑ (k : ℕ) in filter (λ (x : ℕ), x ∈ s) snat, f j k,
-  { rw h1, },
-  rw h2,
-
+  rw h3,
+  
 end
 
 
@@ -124,7 +122,7 @@ lemma id230 (f : ℕ → ℕ → ℝ) (sk sj a b  : finset ℕ) (sk' sj': ℕ �
 Sum (λ j, Sum (λ k, f j k) (a)) sj = Sum (λ k, Sum (λ j, f j k) (b)) sk :=
 begin
 
-  have h6 : sj ⊆ (sk ∪ sj ∪ a ∪ b) ∧ sk ⊆ (sk ∪ sj ∪ a ∪ b) ∧ a ⊆ (sk ∪ sj ∪ a ∪ b) ∧ b ⊆ (sk ∪ sj ∪ a ∪ b),
+  have h4 : sj ⊆ (sk ∪ sj ∪ a ∪ b) ∧ sk ⊆ (sk ∪ sj ∪ a ∪ b) ∧ a ⊆ (sk ∪ sj ∪ a ∪ b) ∧ b ⊆ (sk ∪ sj ∪ a ∪ b),
   { split, rw union_assoc, rw union_assoc, rw union_comm, rw union_assoc, 
   apply (subset_union_left sj), split, rw union_assoc, rw union_assoc, 
   apply (subset_union_left sk), split, rw union_assoc, rw union_assoc, rw union_comm,
@@ -138,9 +136,9 @@ begin
   rw aux2 f sk b,
   
 
-  have h3 : ∀ x y, ite (y ∈ b ∧ x ∈ sk) 1 0 = ite (y ∈ b) 1 0 * ite (x ∈ sk) 1 0,
+  have h2 : ∀ x y, ite (y ∈ b ∧ x ∈ sk) 1 0 = ite (y ∈ b) 1 0 * ite (x ∈ sk) 1 0,
   { intros x y, rw ← ite_mul_zero_left, rw one_mul, rw ← ite_and, },
-  have h4 : ∀ x y, ite (y ∈ sj ∧ x ∈ a) 1 0 = ite (y ∈ sj) 1 0 * ite (x ∈ a) 1 0,
+  have h3 : ∀ x y, ite (y ∈ sj ∧ x ∈ a) 1 0 = ite (y ∈ sj) 1 0 * ite (x ∈ a) 1 0,
   { intros x y, rw ← ite_mul_zero_left, rw one_mul, rw ← ite_and, },
 
   repeat {rw Sum},
@@ -151,19 +149,19 @@ begin
   apply mul_eq_mul_left_iff.mpr,
   left,
 
-  have h5 : ((ite (q ∈ sj ∧ w ∈ (a)) 1 0)) = 
+  have h1 : ((ite (q ∈ sj ∧ w ∈ (a)) 1 0)) = 
   ((ite (q ∈ (b) ∧ w ∈ sk) 1 0) ),
-  { rw (h3 w q), rw (h4 w q), rw (h q w), rw mul_comm, },
+  { rw (h2 w q), rw (h3 w q), rw (h q w), rw mul_comm, },
 
   
   apply eq.symm, 
-  exact_mod_cast h5,
+  exact_mod_cast h1,
 
 
-  exact h6.right.right.right,
-  exact h6.right.left,
-  exact h6.left,
-  exact h6.right.right.left,
+  exact h4.right.right.right,
+  exact h4.right.left,
+  exact h4.left,
+  exact h4.right.right.left,
   
 
 end
@@ -214,7 +212,7 @@ begin
   exact i.right.right, split, exact i.left, exact i.right.left, },
 
   by_cases (1 ≤ j ∧ j ≤ k ∧ k ≤ n),
-  { rw if_pos, rw if_pos, rw ← h1, exact h1.mpr h, exact h1.mpr h, },
+  { rw if_pos, rw if_pos, exact h, exact h1.mpr h, },
   rw if_neg,
   rw if_neg,
   exact h,
@@ -244,13 +242,11 @@ begin
   refl, intros y i2, simp,
   rw hs, rw (h x), simp,
 
-  have h1a : ∀ (x:ℕ), ¬ x<0, { exact nat.not_lt_zero, },
-
   have h1 : ∀ (x : ℕ), ¬ x = 0 → 1 ≤ x, {intros x i2, apply le_of_not_lt, rw hs at i,
   simp at i, rw not_lt, apply nat.succ_le_of_lt, rw ← gt_iff_lt, exact pos_iff_ne_zero.mpr i2, },
 
   by_cases (x ≤ y),
-  { rw if_pos, rw if_pos, exact h,  rw hs at i, simp at i, split, split, exact i.left, 
+  { rw if_pos, rw if_pos, exact h, rw hs at i, simp at i, split, split, exact i.left, 
   exact (h1 x i.right), rw hs at i2, simp at i2, split, exact i2.left, exact h, },
   rw if_neg, rw if_neg, exact h, rw not_and, intro i3, rw not_and, intro i4, exact h,
 
@@ -381,13 +377,13 @@ begin
   simp,
   exact sum_extend_by_zero s (λ (i : ℕ), f i ^ 2),
   norm_num,
-end--check this
+end
 
 
 
 
 
-lemma id234 (fa fb : ℕ → ℝ) (n : ℕ) (s : finset ℕ) (sp : finset ℕ × ℕ) 
+lemma id234 (fa fb : ℕ → ℝ) (n : ℕ) (s : finset ℕ) --(sp : finset ℕ × ℕ) 
 (hs : s = range (n+1) \ {0}) (sp = (filter (λ (p:ℕ × ℕ), (p.fst < p.snd)) (s.product s))) :
 Sum fa s * Sum fb s = n * Sum (fa * fb) s - 
 ∑ p in sp, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) :=
@@ -402,47 +398,47 @@ begin
   { rw h1, rw H, simp, rw sum_filter, rw sum_product, simp, rw sum_comm, rw sum_filter, 
   rw sum_product, },
 
-  have ha : 2 * ∑ p in sp, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) =
+  have h3 : 2 * ∑ p in sp, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) =
   ∑ p in sp, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) +
   ∑ p in (filter (λ (p:ℕ × ℕ), (p.fst > p.snd)) (s.product s)),
   (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)),
   {rw two_mul, rw ← h2,},
 
-  have h3 :  ∑ p in (filter (λ (p:ℕ × ℕ), (p.fst = p.snd)) (s.product s)),
+  have h5 :  ∑ p in (filter (λ (p:ℕ × ℕ), (p.fst = p.snd)) (s.product s)),
   (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) = 0,
   { rw sum_eq_zero, intros x i, rw mul_eq_zero, left, rw sub_eq_zero, apply congr, refl, 
   rw mem_filter at i, apply eq.symm, exact i.right,},
 
-  have hv : s.product s = filter (λ (a : ℕ × ℕ), true) (s.product s),
+  have h4a : s.product s = filter (λ (a : ℕ × ℕ), true) (s.product s),
   { simp, },
 
-  have ho : ∀ (a b : ℕ), a < b ∨ a = b ∨ a > b, {exact trichotomous, },
+  have h4b : ∀ (a b : ℕ), a < b ∨ a = b ∨ a > b, {exact trichotomous, },
   
 
   have h4: 2 * ∑ p in sp, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) =
   ∑ p in s.product s, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) -
   ∑ p in (filter (λ (p:ℕ × ℕ), (p.fst = p.snd)) (s.product s)),
   (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)),
-  { rw ha, apply eq.symm, rw sub_eq_iff_eq_add', rw ← sum_union, rw H, rw ← sum_union,
-  rw ← filter_or, rw ← filter_or, apply congr, apply congr, refl, rw hv, rw filter_filter,
-  apply filter_congr, intros x i, simp, rw ← gt_iff_lt, exact or.left_comm.mp (ho x.fst x.snd),
+  { rw h3, apply eq.symm, rw sub_eq_iff_eq_add', rw ← sum_union, rw H, rw ← sum_union,
+  rw ← filter_or, rw ← filter_or, apply congr, apply congr, refl, rw h4a, rw filter_filter,
+  apply filter_congr, intros x i, simp, rw ← gt_iff_lt, exact or.left_comm.mp (h4b x.fst x.snd),
   refl, rw ← filter_or, rw disjoint_filter, intros x i i2 i3, apply or.elim i3,
   intro i4, linarith, intro i4, linarith, rw H, rw disjoint_filter, intros x i i2 i3,
   linarith, },
 
-  rw h3 at h4,
+  rw h5 at h4,
   rw sub_zero at h4,
 
-  have h6 : ∑ p in s.product s, fa p.fst * fb p.snd =
+  have h6a : ∑ p in s.product s, fa p.fst * fb p.snd =
   ∑ p in s.product s, fa p.snd * fb p.fst,
   { rw sum_product, rw sum_comm, rw sum_product, },
 
-  have h7 : ∑ p in s.product s, fa p.fst * fb p.fst =
+  have h6b : ∑ p in s.product s, fa p.fst * fb p.fst =
    ∑ p in s.product s, fa p.snd * fb p.snd,
    { rw sum_product, rw sum_comm, rw sum_product, },
 
   
-  have h5 : ∑ p in s.product s, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) =
+  have h6 : ∑ p in s.product s, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) =
   2*n * Sum (fa * fb) s - 2 * Sum fa s * Sum fb s, 
   {calc
   ∑ p in s.product s, (fa p.snd - fa p.fst) * ((fb p.snd) - (fb p.fst)) =
@@ -452,7 +448,7 @@ begin
   apply funext, intro x, ring, }
   ...                 = 2 * ∑ p in s.product s, fa p.snd * fb p.snd - 
   2 * ∑ p in s.product s, fa p.fst * fb p.snd :
-  by {rw h6, rw sub_sub, rw ← two_mul, rw h7, ring, }
+  by {rw h6a, rw sub_sub, rw ← two_mul, rw h6b, ring, }
   ...                 = 2 * ∑ p in s.product s, fa p.snd * fb p.snd - 2 * Sum fa s * Sum fb s :
   by {simp, rw mul_assoc, rw id228, }
   ...                 = 2*n * Sum (fa * fb) s - 2 * Sum fa s * Sum fb s :
@@ -460,11 +456,11 @@ begin
   rw Sum, simp, left, rw hs, rw card_sdiff, norm_num, norm_num, },
   },
 
-  rw ← h4 at h5,
-  repeat {rw mul_assoc at h5},
-  rw ← mul_sub at h5,
-  rw mul_eq_mul_left_iff at h5,
-  apply or.elim h5,
+  rw ← h4 at h6,
+  repeat {rw mul_assoc at h6},
+  rw ← mul_sub at h6,
+  rw mul_eq_mul_left_iff at h6,
+  apply or.elim h6,
   { intro i, apply eq.symm, rw sub_eq_iff_eq_add', rw ← sub_eq_iff_eq_add, exact i.symm, },
   norm_num,
   
@@ -497,11 +493,11 @@ begin
   rw h3,
   rw id229b,
 
-  have tst : ∀ x, (λ (j : ℕ), fa (fp j)) x = fa (fp x), {exact congr_fun rfl,},
-  have tst2 : ∀ x, (λ (k : ℕ), Sum (λ (j : ℕ), fa j * ite (fp k = j) 1 0) sk) x =
+  have h4 : ∀ x, (λ (j : ℕ), fa (fp j)) x = fa (fp x), {exact congr_fun rfl,},
+  have h5 : ∀ x, (λ (k : ℕ), Sum (λ (j : ℕ), fa j * ite (fp k = j) 1 0) sk) x =
    Sum (λ (j : ℕ), fa j * ite (fp x = j) 1 0) sk, { exact congr_fun rfl,},
 
-  apply sum_congr, refl, intros x hj, rw tst, rw tst2,  rw Sum,
+  apply sum_congr, refl, intros x hj, rw h4, rw h5, rw Sum,
   rw sum_mul_boole, 
 
   rw if_pos, apply hp, exact hj, 
@@ -539,15 +535,15 @@ begin
   rw sum_singleton,
   rw add_comm,
   rw add_sub,
-  have h4 : ∑ (k : ℕ) in range (n + 1) \ {0}, 1 / ↑k +
-   ↑n * ∑ (k : ℕ) in range (n + 1) \ {0}, 1 / ↑k = (n + 1) * 
-   ∑ (k : ℕ) in range (n + 1) \ {0}, 1 / ↑k,
-  { rw add_mul, rw one_mul, rw add_comm, simp, },
+  --have h4 : ∑ (k : ℕ) in range (n + 1) \ {0}, 1 / ↑k +
+  -- ↑n * ∑ (k : ℕ) in range (n + 1) \ {0}, 1 / ↑k = (n + 1) * 
+  -- ∑ (k : ℕ) in range (n + 1) \ {0}, 1 / ↑k,
+  --{ rw add_mul, rw one_mul, rw add_comm, simp, },
   rw mul_comm ↑(n + 1),
   rw add_mul,
   rw div_mul_cancel,
   simp,
-  rw mul_comm (∑ (x : ℕ) in range (n + 1) \ {0}, (↑x)⁻¹),
+  --rw mul_comm (∑ (x : ℕ) in range (n + 1) \ {0}, (↑x)⁻¹),
   ring,
   exact (nat.add n 0).cast_add_one_ne_zero,
   rw disjoint_iff_inter_eq_empty,
